@@ -79,7 +79,7 @@ public class TelaLogin extends javax.swing.JFrame {
     }
 
     public void deuErro() {
-        try ( FileWriter fileWriter = new FileWriter("C:\\\\Users\\\\aleex\\\\OneDrive\\\\Área de Trabalho\\\\writerFile.txt", true)) {
+        try ( FileWriter fileWriter = new FileWriter("/root/Desktop/writerFile.txt", true)) {
             fileWriter.write(now.format(formatter) + "\n \nTentativa de Login realizada. (Sem Sucesso) \n \n");
         } catch (IOException e) {
             System.err.println("Erro ao criar o arquivo de log");
