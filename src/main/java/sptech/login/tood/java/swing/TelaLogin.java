@@ -4,41 +4,15 @@
  */
 package sptech.login.tood.java.swing;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.Objects;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import com.github.britooo.looca.api.core.Looca;
 import com.github.britooo.looca.api.group.discos.Disco;
 import com.github.britooo.looca.api.group.discos.DiscoGrupo;
-import com.github.britooo.looca.api.group.discos.Volume;
-import com.github.britooo.looca.api.group.janelas.Janela;
-import com.github.britooo.looca.api.group.janelas.JanelaGrupo;
 import com.github.britooo.looca.api.group.memoria.Memoria;
 import com.github.britooo.looca.api.group.processador.Processador;
-import com.github.britooo.looca.api.group.processos.Processo;
-import com.github.britooo.looca.api.group.processos.ProcessoGrupo;
 import com.github.britooo.looca.api.group.sistema.Sistema;
-
-import static com.github.britooo.looca.api.util.Conversor.formatarBytes;
-import java.io.FileWriter;
-
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -49,25 +23,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public class TelaLogin extends javax.swing.JFrame {
 
-    // LOG //
-    FileWriter fileWriter;
-    LocalDateTime now = LocalDateTime.now();
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    String formattedDateTime = now.format(formatter) + System.lineSeparator();
-
-    // SQL SERVER
-    ConexaoSqlServer conexao = new ConexaoSqlServer();
+    Conexao conexao = new Conexao();
     JdbcTemplate con = conexao.getConexaoDoBanco();
-    // MYSQL
-    ConexaoMysql conexaoLocal = new ConexaoMysql();
-    JdbcTemplate conLocal = conexaoLocal.getConexaoDoBanco();
-    // -----------------------------------------------------------
     Looca looca = new Looca();
     Memoria memoria = looca.getMemoria();
     Processador processador = looca.getProcessador();
     DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
     List<Disco> discos = grupoDeDiscos.getDiscos();
-    List<Volume> volumes = grupoDeDiscos.getVolumes();
+
     Long memoriaEmUso = memoria.getEmUso();
     Double processadorEmUso = processador.getUso();
 
@@ -87,23 +50,20 @@ public class TelaLogin extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         txtEmail = new javax.swing.JTextField();
         txtSenha = new javax.swing.JTextField();
         btnAprovacao = new javax.swing.JButton();
-        lbLoginRealizado = new javax.swing.JLabel();
-        lbDeuErrado = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
         lblTituloTela = new javax.swing.JLabel();
-
-        jLabel1.setText("jLabel1");
-
-        jLabel3.setText("jLabel3");
+        lbLoginRealizado = new javax.swing.JLabel();
+        lblSptechLogo = new javax.swing.JLabel();
+        jIcon = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addContainerListener(new java.awt.event.ContainerAdapter() {
+            public void componentAdded(java.awt.event.ContainerEvent evt) {
+                formComponentAdded(evt);
+            }
+        });
 
         txtEmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -124,76 +84,60 @@ public class TelaLogin extends javax.swing.JFrame {
             }
         });
 
+        lblTituloTela.setText("Acesse sua conta");
+
         lbLoginRealizado.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
-        lbDeuErrado.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/tood-logo-black.png"))); // NOI18N
-
-        jLabel4.setText("Login:");
-
-        jLabel5.setText("Senha:");
-
-        lblTituloTela.setText("Acesse sua conta:");
+        jIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/tood-logo-white.png"))); // NOI18N
+        jIcon.setText("jLabel1");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(btnAprovacao, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(lbDeuErrado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(lbLoginRealizado, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                        .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addGap(18, 18, 18)
-                                                        .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addGap(26, 26, 26)
-                                                        .addComponent(txtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(layout.createSequentialGroup()
-                                .addGap(122, 122, 122)
-                                .addComponent(lblTituloTela, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addContainerGap(80, Short.MAX_VALUE)
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(76, 76, 76))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 364, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 131, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAprovacao, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(46, 46, 46))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(82, 82, 82)
+                .addComponent(lbLoginRealizado, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblTituloTela, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(33, 33, 33))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(476, Short.MAX_VALUE)
+                    .addComponent(lblSptechLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap()))
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(lblTituloTela, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lbLoginRealizado, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(txtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel4))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel5))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lbDeuErrado, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btnAprovacao)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblTituloTela)
+                .addGap(45, 45, 45)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(26, 26, 26)
+                        .addComponent(txtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(26, 26, 26)
+                        .addComponent(btnAprovacao)))
+                .addGap(7, 7, 7)
+                .addComponent(lbLoginRealizado, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(lblSptechLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(119, Short.MAX_VALUE)))
         );
 
         pack();
@@ -204,91 +148,34 @@ public class TelaLogin extends javax.swing.JFrame {
     }//GEN-LAST:event_txtEmailActionPerformed
 
     private void btnAprovacaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAprovacaoActionPerformed
+        // TODO add your handling code here:
+
+        String emailDigitado = txtEmail.getText();
+        String senhaDigitada = txtSenha.getText();
+
         try {
-            // TODO add your handling code here:
-
-            String emailDigitado = txtEmail.getText();
-            String senhaDigitada = txtSenha.getText();
-
-            String textToBeWritten = "Login realizado pelo usuario:";
-            String textToBeWritten1 = emailDigitado;
-
-            PrintWriter printWriter = new PrintWriter("C:\\\\Users\\\\aleex\\\\OneDrive\\\\Área de Trabalho\\\\writerFile.txt");
-            String filePath = "C:\\\\Users\\\\aleex\\\\OneDrive\\\\Área de Trabalho\\\\writerFile.txt";
-
-            try {
-                Usuario listaUsuario = con.queryForObject("SELECT * FROM usuario WHERE email = ?  AND senha = ?",
-                        new BeanPropertyRowMapper<>(Usuario.class), emailDigitado, senhaDigitada);
-                txtEmail.setVisible(false);
-                txtSenha.setVisible(false);
-                btnAprovacao.setVisible(false);
-                lblTituloTela.setVisible(false);
-                lbLoginRealizado.setText("Login realizado!");
-                System.out.println("login realizado!");
-                lbDeuErrado.setText("");
-
-                Disco disco = discos.get(0);
-                Volume volume = volumes.get(0);
-
-                ProcessoGrupo processoGrupo = looca.getGrupoDeProcessos();
-                List<Processo> processos = processoGrupo.getProcessos();
-
-                try ( FileWriter fileWriter = new FileWriter("C:\\\\Users\\\\aleex\\\\OneDrive\\\\Área de Trabalho\\\\writerFile.txt", true)) {
-                    fileWriter.write(now.format(formatter) + " \nLogin realizado pelo usuario:" + emailDigitado + "\n\n ");
-//                    fileWriter.write(LocalDateTime.now() + " - Log de aviso\n");
-//                    fileWriter.write(LocalDateTime.now() + " - Log de erro grave\n");
-                } catch (IOException e) {
-                    System.err.println("Erro ao criar o arquivo de log");
-                }
-//                Objects.requireNonNull(printWriter).println(textToBeWritten);
-//                Objects.requireNonNull(printWriter).println(textToBeWritten1);
-//                Objects.requireNonNull(printWriter).println(formattedDateTime);
-//                printWriter.close();
-
-                new Timer().scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        memoriaEmUso = memoria.getEmUso();
-                        processadorEmUso = processador.getUso();
-
-                        System.out.println(String.format("Inseridos os valores: qtdRam: %s, Volume: %s, Processador: %s",
-                                formatarBytes(memoria.getEmUso()), formatarBytes(volume.getDisponivel()), String.format("%.2f",
-                                processador.getUso())));
-                        try ( FileWriter fileWriter = new FileWriter("C:\\\\Users\\\\aleex\\\\OneDrive\\\\Área de Trabalho\\\\writerFile.txt", true)) {
-                            fileWriter.write(now.format(formatter) + String.format("\n \nInseridos os valores: qtdRam: %s, Volume: %s, Processador: %s",
-                                formatarBytes(memoria.getEmUso()), formatarBytes(volume.getDisponivel()), String.format("%.2f",
-                                processador.getUso())));
-                        } catch (IOException e) {
-                            System.err.println("Erro ao criar o arquivo de log");
-                        }
-                        con.update("insert into [dbo].[DadoTotem] values (2, CONVERT(VARCHAR(19), GETDATE(), 120) , ?, ?, ?)",
-                                formatarBytes(memoria.getEmUso()), formatarBytes(volume.getDisponivel()), String.format("%.2f",
-                                processador.getUso()));
-
-                        conLocal.update("insert into DadoTotem(qtdRam, qtdFaltaDisco, qtdProcessador) values (?, ?, ?)",
-                                formatarBytes(memoria.getEmUso()), formatarBytes(volume.getDisponivel()), String.format("%.2f",
-                                processador.getUso()));
+            Usuario listaUsuario = con.queryForObject("SELECT * FROM usuario WHERE email = ?  AND senha = ?",
+                    new BeanPropertyRowMapper<>(Usuario.class), emailDigitado, senhaDigitada);
+            txtEmail.setVisible(false);
+            txtSenha.setVisible(false);
+            btnAprovacao.setVisible(false);
+            lblTituloTela.setVisible(false);
+            lbLoginRealizado.setText("Login realizado!");
+            lbDeuErrado.setText("");
+            new Timer().scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    System.out.println("NOVOS DADOS!");
+                        for (Disco disco : discos) {
+                        System.out.println(disco);
                     }
-                }, 0, 5000);
-            } catch (Exception e) {
-
-                System.out.println("Não entrou!!!");
-                lbDeuErrado.setText("Falha no login!");
-
-            }
-            try ( FileWriter fileWriter = new FileWriter("C:\\\\Users\\\\aleex\\\\OneDrive\\\\Área de Trabalho\\\\writerFile.txt", true)) {
-                fileWriter.write(now.format(formatter) + "\n \nTentativa de Login realizada. (Sem Sucesso) \n \n");
-            } catch (IOException e) {
-                System.err.println("Erro ao criar o arquivo de log");
-            }
-
-//        if (!emailDigitado.contains("@")) {
-//            System.out.println("O e-mail não contém o caractere '@'.");
-//        } else if (senhaDigitada.length() < 6) {
-//            System.out.println("A senha tem menos de 6 caracteres.");
-//        }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                    System.out.println("Memória em uso: "+memoriaEmUso);
+                    System.out.println("Processador em uso: "+processadorEmUso);
+                }
+            }, 0, 1000);
+        } catch (Exception e) {
+            System.out.println("Não entrou!!!");
+            lbDeuErrado.setText("Falha no login!");
         }
 
 //        if (!emailDigitado.contains("@")) {
@@ -303,6 +190,10 @@ public class TelaLogin extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtSenhaActionPerformed
 
+    private void formComponentAdded(java.awt.event.ContainerEvent evt) {//GEN-FIRST:event_formComponentAdded
+        // TODO add your handling code here:
+    }//GEN-LAST:event_formComponentAdded
+
     /**
      * @param args the command line arguments
      */
@@ -310,7 +201,7 @@ public class TelaLogin extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -340,13 +231,9 @@ public class TelaLogin extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAprovacao;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel lbDeuErrado;
+    private javax.swing.JLabel jIcon;
     private javax.swing.JLabel lbLoginRealizado;
+    private javax.swing.JLabel lblSptechLogo;
     private javax.swing.JLabel lblTituloTela;
     private javax.swing.JTextField txtEmail;
     private javax.swing.JTextField txtSenha;
