@@ -34,7 +34,9 @@ import com.github.britooo.looca.api.group.sistema.Sistema;
 
 import static com.github.britooo.looca.api.util.Conversor.formatarBytes;
 import com.sun.tools.javac.Main;
+import java.io.BufferedReader;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 
 import java.util.List;
 import java.util.Timer;
@@ -85,7 +87,7 @@ public class TelaLogin extends javax.swing.JFrame {
     }
 
     public void deuErro() {
-        try (FileWriter fileWriter = new FileWriter("/root/Desktop/writerFile.txt", true)) {
+        try (FileWriter fileWriter = new FileWriter("writerFile.txt", true)) {
             fileWriter.write(now.format(formatter) + "\n \nTentativa de Login realizada. (Sem Sucesso) \n \n");
         } catch (IOException e) {
             System.err.println("Erro ao criar o arquivo de log");
@@ -271,9 +273,7 @@ public class TelaLogin extends javax.swing.JFrame {
                 Totem totem = conNuvem.queryForObject("SELECT * FROM [dbo].[Totem] where idTotem = ?;",
                         new BeanPropertyRowMapper<>(Totem.class), idTotem);
 
-                System.out.println("Totem do pai " + totem);
-
-                try (FileWriter fileWriter = new FileWriter("/root/Desktop/writerFile.txt", true)) {
+                try (FileWriter fileWriter = new FileWriter("writerFile.txt", true)) {
                     fileWriter.write(now.format(formatter) + " \nLogin realizado pelo usuario:" + emailDigitado + "\n\n ");
 //                    fileWriter.write(LocalDateTime.now() + " - Log de aviso\n");
 //                    fileWriter.write(LocalDateTime.now() + " - Log de erro grave\n");
@@ -313,20 +313,14 @@ public class TelaLogin extends javax.swing.JFrame {
 
                     @Override
                     public void run() {
-                        // RAM Falta Porcentagem
-//                Double ramEmUso = Totem.formatar(formatarBytes(memoria.getEmUso()));
+                        Totem totemAtualiza = conNuvem.queryForObject("SELECT * FROM [dbo].[Totem] where idTotem = ?;",
+                                new BeanPropertyRowMapper<>(Totem.class), idTotem);
 
-                        // aq Oh
                         String ram = formatarBytes(memoria.getEmUso());
 
-                        // Disco Falta Porcentagem // armazenamento usando
-//               Double volumeEmUso = Totem.formatar(formatarBytes(volume.getTotal())) - Totem.formatar(formatarBytes(volume.getDisponivel()));
                         Long volumeEmUsoLong = volume.getTotal() - volume.getDisponivel();
                         String volumeString = formatarBytes(volumeEmUsoLong);
 
-                        // Processador Já vem em porcentagem
-//                Double cpuEmUso = processador.getUso();
-                        // tirar dps talvez
                         long totalBytesRecebidos = redeInterfaces.stream()
                                 .mapToLong(RedeInterface::getBytesRecebidos)
                                 .sum();
@@ -353,20 +347,20 @@ public class TelaLogin extends javax.swing.JFrame {
 
                             System.out.println("Processador %.2f".formatted(processador.getUso()));
 
-                            if (ramPorcentagem > totem.getAlertaRam()) {;
+                            if (ramPorcentagem > totemAtualiza.getAlertaRam()) {
                                 json.put("text", "%s - Totem %s - A porcentagem da RAM antigiu %.2f %%".formatted(Utils.obterDataFormatada(), idTotem, ramPorcentagem));
                                 Slack.sendMessage(json);
                             }
-                            if (Utils.formatarArmazenamento(volumeString) > totem.getAlertaDisco()) {
+                            if (Utils.formatarArmazenamento(volumeString) > totemAtualiza.getAlertaDisco()) {
                                 json.put("text", "%s - Totem %s - A porcentagem do volume do disco antigiu %.2f %%".formatted(Utils.obterDataFormatada(), idTotem, Utils.formatarArmazenamento(volumeString)));
                                 Slack.sendMessage(json);
                             }
 
-                            if (processador.getUso() > totem.getAlertaProcessador()) {
+                            if (processador.getUso() > totemAtualiza.getAlertaProcessador()) {
                                 qtdAlertaCpu += 1;
 
                                 if (qtdAlertaCpu == 5) {
-                                    json.put("text", "%s - Totem %s - Por 25s a porcentagem da cpu passou do limite de %d %%".formatted(Utils.obterDataFormatada(), idTotem, totem.getAlertaProcessador()));
+                                    json.put("text", "%s - Totem %s - Por 25s a porcentagem da cpu passou do limite de %d %%".formatted(Utils.obterDataFormatada(), idTotem, totemAtualiza.getAlertaProcessador()));
                                     Slack.sendMessage(json);
                                     qtdAlertaCpu = 0;
                                 }
@@ -377,9 +371,50 @@ public class TelaLogin extends javax.swing.JFrame {
                         } catch (InterruptedException ex) {
                             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        Double ramGigas = Utils.formatarRamMibEmGib(ram);
 
-                        try (FileWriter fileWriter = new FileWriter("/root/Desktop/writerFile.txt", true)) {
+                        Double ramGigas = Utils.formatarRamMibEmGib(ram);
+                        Double ramPorcentagem = ramGigas * 100 / 8;
+
+                        if (totemAtualiza.getRebootProcessador() > processador.getUso() && totemAtualiza.getRebootRam() > ramPorcentagem) {
+                            try {
+                                json.put("text", "%s - Totem %s - Programa foi encerrado".formatted(Utils.obterDataFormatada(), idTotem));
+                                try {
+                                    Slack.sendMessage(json);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                conNuvem.update("update [dbo].[Totem] set ativo = 'false' where idTotem = ?;", idTotem);
+
+                                // Comando que você deseja executar
+                                String comando = "sudo reboot";
+
+                                // Cria o ProcessBuilder com o comando
+                                ProcessBuilder pb = new ProcessBuilder("bash", "-c", comando);
+
+                                // Redireciona a saída de erro para a saída padrão
+                                pb.redirectErrorStream(true);
+
+                                // Inicia o processo
+                                Process processo = pb.start();
+
+                                // Obtém a saída do processo
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(processo.getInputStream()));
+                                String linha;
+                                while ((linha = reader.readLine()) != null) {
+                                    System.out.println(linha);
+                                }
+
+                                // Aguarda a finalização do processo
+                                int status = processo.waitFor();
+                                System.out.println("O comando foi executado com sucesso. Código de saída: " + status);
+                            } catch (IOException | InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        try (FileWriter fileWriter = new FileWriter("writerFile.txt", true)) {
                             fileWriter.write(now.format(formatter) + String.format("\n \nInseridos os valores: qtdRam: %.2f, Volume: %s, Processador: %.2f",
                                     ramGigas, volumeString, processador.getUso()));
                         } catch (IOException e) {
