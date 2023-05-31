@@ -28,9 +28,12 @@ import com.github.britooo.looca.api.group.memoria.Memoria;
 import com.github.britooo.looca.api.group.processador.Processador;
 import com.github.britooo.looca.api.group.processos.Processo;
 import com.github.britooo.looca.api.group.processos.ProcessoGrupo;
+import com.github.britooo.looca.api.group.rede.RedeInterface;
+import com.github.britooo.looca.api.group.rede.RedeInterfaceGroup;
 import com.github.britooo.looca.api.group.sistema.Sistema;
 
 import static com.github.britooo.looca.api.util.Conversor.formatarBytes;
+import com.sun.tools.javac.Main;
 import java.io.FileWriter;
 
 import java.util.List;
@@ -38,9 +41,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONObject;
 
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import sptech.login.tood.java.swing.slack.Slack;
 
 /**
  * youtube
@@ -49,6 +54,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public class TelaLogin extends javax.swing.JFrame {
 
+    private static String idTotem;
+
+    public static void setIdTotem(String id) {
+        idTotem = id;
+    }
+
+    //SLACK
+    JSONObject json = new JSONObject();
+
     // LOG //
     FileWriter fileWriter;
     LocalDateTime now = LocalDateTime.now();
@@ -56,20 +70,12 @@ public class TelaLogin extends javax.swing.JFrame {
     String formattedDateTime = now.format(formatter) + System.lineSeparator();
 
     // SQL SERVER
-    ConexaoSqlServer conexao = new ConexaoSqlServer();
-    JdbcTemplate con = conexao.getConexaoDoBanco();
+    SqlServer conexao = new SqlServer();
+    JdbcTemplate conNuvem = conexao.getConexaoDoBanco();
     // MYSQL
-    ConexaoMysql conexaoLocal = new ConexaoMysql();
+    MySql conexaoLocal = new MySql();
     JdbcTemplate conLocal = conexaoLocal.getConexaoDoBanco();
     // -----------------------------------------------------------
-    Looca looca = new Looca();
-    Memoria memoria = looca.getMemoria();
-    Processador processador = looca.getProcessador();
-    DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
-    List<Disco> discos = grupoDeDiscos.getDiscos();
-    List<Volume> volumes = grupoDeDiscos.getVolumes();
-    Long memoriaEmUso = memoria.getEmUso();
-    Double processadorEmUso = processador.getUso();
 
     /**
      * Creates new form TelaLogin
@@ -79,7 +85,7 @@ public class TelaLogin extends javax.swing.JFrame {
     }
 
     public void deuErro() {
-        try ( FileWriter fileWriter = new FileWriter("/root/Desktop/writerFile.txt", true)) {
+        try (FileWriter fileWriter = new FileWriter("/root/Desktop/writerFile.txt", true)) {
             fileWriter.write(now.format(formatter) + "\n \nTentativa de Login realizada. (Sem Sucesso) \n \n");
         } catch (IOException e) {
             System.err.println("Erro ao criar o arquivo de log");
@@ -243,8 +249,10 @@ public class TelaLogin extends javax.swing.JFrame {
             String senhaDigitada = txtEmail.getText();
             String idTotem = txtTotem.getText();
 
+            setIdTotem(idTotem);
+
             try {
-                Usuario listaUsuario = con.queryForObject("SELECT * FROM usuario WHERE email = ?  AND senha = ?",
+                Usuario usuario = conNuvem.queryForObject("SELECT * FROM usuario WHERE email = ?  AND senha = ?",
                         new BeanPropertyRowMapper<>(Usuario.class), emailDigitado, senhaDigitada);
                 txtSenha.setVisible(false);
                 txtEmail.setVisible(false);
@@ -254,13 +262,18 @@ public class TelaLogin extends javax.swing.JFrame {
                 System.out.println("login realizado!");
                 lbDeuErrado.setText("");
 
-                Disco disco = discos.get(0);
-                Volume volume = volumes.get(0);
+                //SLACK 
+                json.put("text", "%s - Programa foi iniciado no totem %s.".formatted(Utils.obterDataFormatada(), idTotem));
+                conNuvem.update("update [dbo].[Totem] set ativo = 'true' where idTotem = ?;", idTotem);
+                Slack.sendMessage(json);
 
-                ProcessoGrupo processoGrupo = looca.getGrupoDeProcessos();
-                List<Processo> processos = processoGrupo.getProcessos();
+                //TOTEM AI
+                Totem totem = conNuvem.queryForObject("SELECT * FROM [dbo].[Totem] where idTotem = ?;",
+                        new BeanPropertyRowMapper<>(Totem.class), idTotem);
 
-                try ( FileWriter fileWriter = new FileWriter("C:\\\\Users\\\\aleex\\\\OneDrive\\\\Área de Trabalho\\\\writerFile.txt", true)) {
+                System.out.println("Totem do pai " + totem);
+
+                try (FileWriter fileWriter = new FileWriter("/root/Desktop/writerFile.txt", true)) {
                     fileWriter.write(now.format(formatter) + " \nLogin realizado pelo usuario:" + emailDigitado + "\n\n ");
 //                    fileWriter.write(LocalDateTime.now() + " - Log de aviso\n");
 //                    fileWriter.write(LocalDateTime.now() + " - Log de erro grave\n");
@@ -272,29 +285,113 @@ public class TelaLogin extends javax.swing.JFrame {
 //                Objects.requireNonNull(printWriter).println(formattedDateTime);
 //                printWriter.close();
 
+                // AQ OH
+                Looca looca = new Looca();
+
+                // pegando os dados
+                Memoria memoria = looca.getMemoria();
+
+                DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
+                List<Disco> discos = grupoDeDiscos.getDiscos();
+                Disco disco = discos.get(0);
+                List<Volume> volumes = grupoDeDiscos.getVolumes();
+                Volume volume = volumes.get(0);
+
+                Processador processador = looca.getProcessador();
+
+                RedeInterfaceGroup redes = looca.getRede().getGrupoDeInterfaces();
+                List<RedeInterface> redeInterfaces = redes.getInterfaces();
+
+                RedeInterface rede = redeInterfaces.get(0);
                 new Timer().scheduleAtFixedRate(new TimerTask() {
+                    Integer qtdAlertaCpu = 0;
+                    String id;
+
+                    {
+                        this.id = idTotem;
+                    }
+
                     @Override
                     public void run() {
-                        memoriaEmUso = memoria.getEmUso();
-                        processadorEmUso = processador.getUso();
+                        // RAM Falta Porcentagem
+//                Double ramEmUso = Totem.formatar(formatarBytes(memoria.getEmUso()));
 
-                        System.out.println(String.format("Inseridos os valores: qtdRam: %s, Volume: %s, Processador: %s",
-                                formatarBytes(memoria.getEmUso()), formatarBytes(volume.getDisponivel()), String.format("%.2f",
-                                processador.getUso())));
-                        try ( FileWriter fileWriter = new FileWriter("C:\\\\Users\\\\aleex\\\\OneDrive\\\\Área de Trabalho\\\\writerFile.txt", true)) {
-                            fileWriter.write(now.format(formatter) + String.format("\n \nInseridos os valores: qtdRam: %s, Volume: %s, Processador: %s",
-                                    formatarBytes(memoria.getEmUso()), formatarBytes(volume.getDisponivel()), String.format("%.2f",
-                                    processador.getUso())));
+                        // aq Oh
+                        String ram = formatarBytes(memoria.getEmUso());
+
+                        // Disco Falta Porcentagem // armazenamento usando
+//               Double volumeEmUso = Totem.formatar(formatarBytes(volume.getTotal())) - Totem.formatar(formatarBytes(volume.getDisponivel()));
+                        Long volumeEmUsoLong = volume.getTotal() - volume.getDisponivel();
+                        String volumeString = formatarBytes(volumeEmUsoLong);
+
+                        // Processador Já vem em porcentagem
+//                Double cpuEmUso = processador.getUso();
+                        // tirar dps talvez
+                        long totalBytesRecebidos = redeInterfaces.stream()
+                                .mapToLong(RedeInterface::getBytesRecebidos)
+                                .sum();
+
+                        long totalBytesEnviados = redeInterfaces.stream()
+                                .mapToLong(RedeInterface::getBytesEnviados)
+                                .sum();
+
+                        // Rede 
+                        //SLACK
+                        try {
+
+                            Double ramGigas = Utils.formatarRamMibEmGib(ram);
+
+                            Double ramPorcentagem = ramGigas * 100 / 8;
+//                    Double volumePorcentagem = volumeEmUsoLong * 100 / 30.0;
+
+                            System.out.println("Porcentagem da Ram %.2f".formatted(ramPorcentagem));
+                            System.out.println("Ram usada: %.2f".formatted(ramGigas));
+
+                            // VOLUME agora
+                            System.out.println("Porcentagem volume %.2f".formatted(Utils.formatarArmazenamento(volumeString)));
+                            System.out.println("Volume usado: %s".formatted(volumeString));
+
+                            System.out.println("Processador %.2f".formatted(processador.getUso()));
+
+                            if (ramPorcentagem > totem.getAlertaRam()) {;
+                                json.put("text", "%s - Totem %s - A porcentagem da RAM antigiu %.2f %%".formatted(Utils.obterDataFormatada(), idTotem, ramPorcentagem));
+                                Slack.sendMessage(json);
+                            }
+                            if (Utils.formatarArmazenamento(volumeString) > totem.getAlertaDisco()) {
+                                json.put("text", "%s - Totem %s - A porcentagem do volume do disco antigiu %.2f %%".formatted(Utils.obterDataFormatada(), idTotem, Utils.formatarArmazenamento(volumeString)));
+                                Slack.sendMessage(json);
+                            }
+
+                            if (processador.getUso() > totem.getAlertaProcessador()) {
+                                qtdAlertaCpu += 1;
+
+                                if (qtdAlertaCpu == 5) {
+                                    json.put("text", "%s - Totem %s - Por 25s a porcentagem da cpu passou do limite de %d %%".formatted(Utils.obterDataFormatada(), idTotem, totem.getAlertaProcessador()));
+                                    Slack.sendMessage(json);
+                                    qtdAlertaCpu = 0;
+                                }
+                            }
+
+                        } catch (IOException ex) {
+                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        Double ramGigas = Utils.formatarRamMibEmGib(ram);
+
+                        try (FileWriter fileWriter = new FileWriter("/root/Desktop/writerFile.txt", true)) {
+                            fileWriter.write(now.format(formatter) + String.format("\n \nInseridos os valores: qtdRam: %.2f, Volume: %s, Processador: %.2f",
+                                    ramGigas, volumeString, processador.getUso()));
                         } catch (IOException e) {
                             System.err.println("Erro ao criar o arquivo de log");
                         }
-                        con.update("insert into [dbo].[DadoTotem] values (, CONVERT(VARCHAR(19), GETDATE(), 120) , ?, ?, ?)",
-                                formatarBytes(memoria.getEmUso()), formatarBytes(volume.getDisponivel()), String.format("%.2f",
-                                processador.getUso()));
 
-                        conLocal.update("insert into DadoTotem(qtdRam, qtdFaltaDisco, qtdProcessador) values (?, ?, ?)",
-                                formatarBytes(memoria.getEmUso()), formatarBytes(volume.getDisponivel()), String.format("%.2f",
-                                processador.getUso()));
+//                System.out.println("Processador " + String.format("%.2f", processador.getUso()));
+                        conNuvem.update("insert into [dbo].[DadoTotem] values (?, CONVERT(VARCHAR(19), GETDATE()) , ?, ?, ?)",
+                                idTotem, ramGigas, volumeString, processador.getUso());
+
+                        conLocal.update("insert into dadoTotem values (null, now(), ?, ?, ?)", ramGigas, volumeString, processador.getUso());
+                        // insert local
                     }
                 }, 0, 5000);
             } catch (Exception e) {
@@ -317,6 +414,23 @@ public class TelaLogin extends javax.swing.JFrame {
 //        } else if (senhaDigitada.length() < 6) {
 //            System.out.println("A senha tem menos de 6 caracteres.");
 //        } 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                SqlServer conexao = new SqlServer();
+                JdbcTemplate conNuvem = conexao.getConexaoDoBanco();
+                conNuvem.update("update [dbo].[Totem] set ativo = 'false' where idTotem = ?;", idTotem);
+                json.put("text", "%s - Programa foi encerrado no totem %s.".formatted(Utils.obterDataFormatada(), idTotem));
+                try {
+                    Slack.sendMessage(json);
+                } catch (IOException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                System.out.println("Encerrando programa");
+            }
+        });
 
     }//GEN-LAST:event_btnAprovacaoActionPerformed
 

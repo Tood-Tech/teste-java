@@ -9,8 +9,20 @@ package sptech.login.tood.java.swing;
  * @author Guilherme
  */
 public class Usuario {
+    
     private String email;
+    
     private String senha;
+    
+    private String nomeUsuario;
+
+    public String getNomeUsuario() {
+        return nomeUsuario;
+    }
+
+    public void setNomeUsuario(String nomeUsuario) {
+        this.nomeUsuario = nomeUsuario;
+    }
     
     public String getEmail() {
         return email;
@@ -26,12 +38,5 @@ public class Usuario {
 
     public void setSenha(String senha) {
         this.senha = senha;
-    }
-
-    @Override
-    public String toString() {
-        return "Usuario{" + "email=" + email + ", senha=" + senha + '}';
-    }
-    
-    
+    }  
 }
