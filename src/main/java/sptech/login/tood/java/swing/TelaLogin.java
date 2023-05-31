@@ -321,12 +321,12 @@ public class TelaLogin extends javax.swing.JFrame {
                         Long volumeEmUsoLong = volume.getTotal() - volume.getDisponivel();
                         String volumeString = formatarBytes(volumeEmUsoLong);
 
-                        long totalBytesRecebidos = redeInterfaces.stream()
-                                .mapToLong(RedeInterface::getBytesRecebidos)
+                        long totalPacotesRecebidos = redeInterfaces.stream()
+                                .mapToLong(RedeInterface::getPacotesRecebidos)
                                 .sum();
 
-                        long totalBytesEnviados = redeInterfaces.stream()
-                                .mapToLong(RedeInterface::getBytesEnviados)
+                        long totalPacotesEnviados = redeInterfaces.stream()
+                                .mapToLong(RedeInterface::getPacotesEnviados)
                                 .sum();
 
                         // Rede 
@@ -415,15 +415,15 @@ public class TelaLogin extends javax.swing.JFrame {
                         }
 
                         try (FileWriter fileWriter = new FileWriter("writerFile.txt", true)) {
-                            fileWriter.write(now.format(formatter) + String.format("\n \nInseridos os valores: qtdRam: %.2f, Volume: %s, Processador: %.2f",
+                            fileWriter.write(now.format(formatter) + String.format("\n \nInseridos os valores: qtdRam: %.2f, Volume: %s, Processador: %.2f ",
                                     ramGigas, volumeString, processador.getUso()));
                         } catch (IOException e) {
                             System.err.println("Erro ao criar o arquivo de log");
                         }
 
 //                System.out.println("Processador " + String.format("%.2f", processador.getUso()));
-                        conNuvem.update("insert into [dbo].[DadoTotem] values (?, CONVERT(VARCHAR(19), GETDATE()) , ?, ?, ?)",
-                                idTotem, ramGigas, volumeString, processador.getUso());
+                        conNuvem.update("insert into [dbo].[DadoTotem] values (?, CONVERT(VARCHAR(19), GETDATE()) , ?, ?, ?, ?, ?)",
+                                idTotem, ramGigas, volumeString, processador.getUso(), formatarBytes(totalPacotesEnviados), formatarBytes(totalPacotesRecebidos));
 
                         conLocal.update("insert into dadoTotem values (null, now(), ?, ?, ?)", ramGigas, volumeString, processador.getUso());
                         // insert local

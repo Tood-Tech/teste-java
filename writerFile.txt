@@ -1,1 +1,36 @@
 Hello
+2023-05-31 10:33:25 
+Login realizado pelo usuario:123
+
+ 2023-05-31 10:33:25
+ 
+Inseridos os valores: qtdRam: 13,80, Volume: 123,2 GiB, Processador: 6,592023-05-31 10:33:25
+ 
+Inseridos os valores: qtdRam: 13,80, Volume: 123,2 GiB, Processador: 6,592023-05-31 10:33:25
+ 
+Inseridos os valores: qtdRam: 13,80, Volume: 123,2 GiB, Processador: 4,992023-05-31 10:33:25
+ 
+Inseridos os valores: qtdRam: 13,90, Volume: 123,2 GiB, Processador: 42,632023-05-31 10:33:25
+ 
+Inseridos os valores: qtdRam: 13,80, Volume: 123,2 GiB, Processador: 81,222023-05-31 10:46:47 
+Login realizado pelo usuario:123
+
+ 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,00, Volume: 123,2 GiB, Processador: 8,99 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,00, Volume: 123,2 GiB, Processador: 8,99 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,10, Volume: 123,2 GiB, Processador: 7,41 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,00, Volume: 123,2 GiB, Processador: 3,37 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,10, Volume: 123,2 GiB, Processador: 6,60 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,10, Volume: 123,2 GiB, Processador: 3,19 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,10, Volume: 123,2 GiB, Processador: 3,51 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,10, Volume: 123,2 GiB, Processador: 8,46 2023-05-31 10:46:47
+ 
+Inseridos os valores: qtdRam: 13,10, Volume: 123,2 GiB, Processador: 6,64 
